@@ -30,13 +30,20 @@ function Notes() {
     const [searchItem, setSearchItem] = useState('')
 
     const titleRef = useRef(null)
+    const bodyRef = useRef(null)
+
+    useEffect(() => {
+      const savedDraft = localStorage.getItem("draft")
+      if(savedDraft) {
+        setInput(JSON.parse(savedDraft))
+      }
+    }, [])
 
     const deleteNote = useCallback((id) => {
         setNotes((prevNotes) => prevNotes.filter(note => note.id !== id))
     }, [notes])
 
     const filteredNotes = useMemo(() => {
-      console.log('filtering')
       return notes.filter((note) =>
         note.title.toLowerCase().includes(searchItem.toLowerCase())
       )
@@ -53,6 +60,8 @@ function Notes() {
       }, 1000)
       return () => clearTimeout(id)
     }, [input])
+
+
 
     function handleInput(e) {
         const {name, value} = e.target 
@@ -80,18 +89,13 @@ function Notes() {
 
         setNotes(prevNotes => [ ...prevNotes, newNote])
         setInput({title: "", body:""})
+        localStorage.removeItem("draft")
         titleRef.current.focus()
     }
-
-    
 
     function handleSearch(e) {
         setSearchItem(e.target.value)
     }
-
-    
-
-    
 
   return (
     <div className="grid min-h-screen grid-cols-[420px_1fr]">
@@ -125,6 +129,7 @@ function Notes() {
 
         {/* text area  */}
          <textarea
+            ref={bodyRef}
             name="body"
             placeholder="Write your note"
             value = {input.body}
