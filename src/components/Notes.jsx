@@ -1,6 +1,6 @@
 
 import NoteCard from "./NoteCard"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function Notes() {
 
@@ -13,6 +13,12 @@ function Notes() {
         title: "",
         body: ""
     })
+
+    const [searchItem, setSearchItem] = useState('')
+
+    useEffect(() => {
+    localStorage.setItem('notes', JSON.stringify(notes))
+  }, [notes])
 
     function handleInput(e) {
         const {name, value} = e.target 
@@ -50,7 +56,6 @@ function Notes() {
         setSearchItem(e.target.value)
     }
 
-    const [searchItem, setSearchItem] = useState('')
     const filteredNotes = notes.filter((note) => note.title.toLowerCase().includes(searchItem.toLowerCase()))
 
     
