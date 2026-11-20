@@ -1,6 +1,6 @@
 
 import NoteCard from "./NoteCard"
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 
 function Notes() {
 
@@ -30,6 +30,10 @@ function Notes() {
     const [searchItem, setSearchItem] = useState('')
 
     const titleRef = useRef(null)
+
+    const deleteNote = useCallback((id) => {
+        setNotes((prevNotes) => prevNotes.filter(note => note.id !== id))
+    }, [notes])
 
     const filteredNotes = useMemo(() => {
       console.log('filtering')
@@ -79,9 +83,7 @@ function Notes() {
         titleRef.current.focus()
     }
 
-    function deleteNote(id) {
-        setNotes((prevNotes) => prevNotes.filter(note => note.id !== id))
-    }
+    
 
     function handleSearch(e) {
         setSearchItem(e.target.value)
@@ -153,16 +155,11 @@ function Notes() {
 
             <li key = {note.id} className="relative min-h-32 bg-white px-6 py-5 shadow-[0_2px_4px_0_rgba(0,0,0,0.2),0_25px_50px_0_rgba(0,0,0,0.1)]">
                 <NoteCard
+                id={note.id}
                 title={note.title}
                 body={note.body}
-                />
-                <button
-                type="button"
-                onClick = {() => deleteNote(note.id)}
-                className="absolute top-4 right-5 cursor-pointer text-[26px] leading-none text-[#949494] hover:text-[#c18585]"
-                >
-                ×
-                </button>
+                onDelete={deleteNote}
+              />
             </li>
 
         ))}
