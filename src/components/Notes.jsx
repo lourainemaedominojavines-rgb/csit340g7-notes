@@ -22,22 +22,15 @@ function Notes() {
       return saved ? JSON.parse(saved) : startingNotes
     })
 
-    const [input, setInput] = useState({
-        title: "",
-        body: ""
+    const [input, setInput] = useState(() => {
+        const savedDraft = localStorage.getItem("draft")
+        return savedDraft ? JSON.parse(savedDraft) : { title: "", body: "" }
     })
 
     const [searchItem, setSearchItem] = useState('')
 
     const titleRef = useRef(null)
     const bodyRef = useRef(null)
-
-    useEffect(() => {
-      const savedDraft = localStorage.getItem("draft")
-      if(savedDraft) {
-        setInput(JSON.parse(savedDraft))
-      }
-    }, [])
 
     const deleteNote = useCallback((id) => {
         setNotes((prevNotes) => prevNotes.filter(note => note.id !== id))
@@ -51,7 +44,6 @@ function Notes() {
 
     useEffect(() => {
       localStorage.setItem('notes', JSON.stringify(notes))
-
     }, [notes])
 
     useEffect(() => {
@@ -60,7 +52,6 @@ function Notes() {
       }, 1000)
       return () => clearTimeout(id)
     }, [input])
-
 
 
     function handleInput(e) {
