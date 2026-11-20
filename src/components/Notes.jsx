@@ -1,26 +1,26 @@
 
 import NoteCard from "./NoteCard"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function Notes() {
 
-  const startingNotes = [
-    {
-      id: 1,
-      title: 'Review map and filter',
-      body: 'Redo the TodoMVC steps without looking at the guide.',
-    },
-    {
-      id: 2,
-      title: 'Prepare for the quiz',
-      body: 'Practice writing one handler for many inputs.',
-    },
-  ]
+    const startingNotes = [
+      {
+        id: 1,
+        title: 'Review map and filter',
+        body: 'Redo the TodoMVC steps without looking at the guide.',
+      },
+      {
+        id: 2,
+        title: 'Prepare for the quiz',
+        body: 'Practice writing one handler for many inputs.',
+      },
+    ]
 
-  const [notes, setNotes] = useState(() => {
-    const saved = localStorage.getItem('notes')
-    return saved ? JSON.parse(saved) : startingNotes
-  })
+    const [notes, setNotes] = useState(() => {
+      const saved = localStorage.getItem('notes')
+      return saved ? JSON.parse(saved) : startingNotes
+    })
 
     const [input, setInput] = useState({
         title: "",
@@ -29,8 +29,11 @@ function Notes() {
 
     const [searchItem, setSearchItem] = useState('')
 
+    const titleRef = useRef(null)
+
     useEffect(() => {
       localStorage.setItem('notes', JSON.stringify(notes))
+
     }, [notes])
 
     useEffect(() => {
@@ -66,6 +69,7 @@ function Notes() {
 
         setNotes(prevNotes => [ ...prevNotes, newNote])
         setInput({title: "", body:""})
+        titleRef.current.focus()
     }
 
     function deleteNote(id) {
@@ -102,6 +106,7 @@ function Notes() {
         <form className="grid gap-3">
           <p className="text-[13px] font-normal tracking-wide text-[#949494]">NEW NOTE</p>
           <input
+            ref={titleRef}
             name="title"
             placeholder="Title"
             value = {input.title}
