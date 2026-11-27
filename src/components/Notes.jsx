@@ -7,6 +7,8 @@ const API_URL = import.meta.env.VITE_API_URL
 function Notes() {
 
   const [notes, setNotes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const [input, setInput] = useState(() => {
     try {
@@ -28,19 +30,31 @@ function Notes() {
 
   const filteredNotes = useMemo(() => {
     return notes.filter((note) =>
-      note.title.toLowerCase().includes(searchItem.toLowerCase())
+      note.title.toLowerCase().includes(searchItem.trim().toLowerCase())
     )
   }, [notes, searchItem])
 
   useEffect(() => {
+    let ignore = false
     async function loadNotes() {
-      const res = await fetch(API_URL + '/notes')
-      const data = await res.json()
-      setNotes(data)
-    }
-
+    try {
+        const res = await fetch(API_URL + '/notes')
+        if (!res.ok) {
+          throw new Error('The server answered ' + res.status)
+        }
+        const data = await res.json()
+        if (!ignore) setNotes(data)
+      } catch (err) {
+        if (!ignore) setError(err.message)
+      }
+      if (!ignore) setLoading(false)
+     }
+  
     loadNotes()
-  }, [])
+    return () => {
+      ignore = true
+    }
+   }, [])
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -156,7 +170,11 @@ function Notes() {
         ))}
         </ul>
 
-        {notes.length === 0 && (<p className="text-lg text-[#949494]">No notes found</p>)}
+        {loading && <p className="text-lg text-[#949494]">Loading notes...</p>}
+        {error && <p className="text-lg text-[#b83f45]">{error}</p>}
+        {!loading && !error && filteredNotes.length === 0 && (
+           <p className="text-lg text-[#949494]">No notes found</p>
+         )}
 
     </section>
 
