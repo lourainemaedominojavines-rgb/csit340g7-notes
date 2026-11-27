@@ -18,40 +18,48 @@ function Notes() {
     ]
 
     const [notes, setNotes] = useState(() => {
-      const saved = localStorage.getItem('notes')
-      return saved ? JSON.parse(saved) : startingNotes
-    })
+  try {
+    const saved = localStorage.getItem('notes')
+    return saved ? JSON.parse(saved) : startingNotes
+  } catch {
+    return startingNotes
+  }
+})
 
-    const [input, setInput] = useState(() => {
-        const savedDraft = localStorage.getItem("draft")
-        return savedDraft ? JSON.parse(savedDraft) : { title: "", body: "" }
-    })
+const [input, setInput] = useState(() => {
+  try {
+    const savedDraft = localStorage.getItem("draft")
+    return savedDraft ? JSON.parse(savedDraft) : { title: "", body: "" }
+  } catch {
+    return { title: "", body: "" }
+  }
+})
 
-    const [searchItem, setSearchItem] = useState('')
+const [searchItem, setSearchItem] = useState('')
 
-    const titleRef = useRef(null)
-    const bodyRef = useRef(null)
+const titleRef = useRef(null)
+const bodyRef = useRef(null)
 
-    const deleteNote = useCallback((id) => {
-        setNotes((prevNotes) => prevNotes.filter(note => note.id !== id))
-    }, [notes])
+const deleteNote = useCallback((id) => {
+  setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id))
+}, [])
 
-    const filteredNotes = useMemo(() => {
-      return notes.filter((note) =>
-        note.title.toLowerCase().includes(searchItem.toLowerCase())
-      )
-    }, [notes, searchItem])
+const filteredNotes = useMemo(() => {
+  return notes.filter((note) =>
+    note.title.toLowerCase().includes(searchItem.toLowerCase())
+  )
+}, [notes, searchItem])
 
-    useEffect(() => {
-      localStorage.setItem('notes', JSON.stringify(notes))
-    }, [notes])
+useEffect(() => {
+  localStorage.setItem('notes', JSON.stringify(notes))
+}, [notes])
 
-    useEffect(() => {
-      const id = setTimeout(() => {
-        localStorage.setItem('draft', JSON.stringify(input))
-      }, 1000)
-      return () => clearTimeout(id)
-    }, [input])
+useEffect(() => {
+  const id = setTimeout(() => {
+    localStorage.setItem('draft', JSON.stringify(input))
+  }, 1000)
+  return () => clearTimeout(id)
+}, [input])
 
 
     function handleInput(e) {
