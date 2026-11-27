@@ -2,99 +2,86 @@
 import NoteCard from "./NoteCard"
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL 
+
 function Notes() {
 
-    const startingNotes = [
-      {
-        id: 1,
-        title: 'Review map and filter',
-        body: 'Redo the TodoMVC steps without looking at the guide.',
-      },
-      {
-        id: 2,
-        title: 'Prepare for the quiz',
-        body: 'Practice writing one handler for many inputs.',
-      },
-    ]
+  const [notes, setNotes] = useState([])
 
-    const [notes, setNotes] = useState(() => {
-  try {
-    const saved = localStorage.getItem('notes')
-    return saved ? JSON.parse(saved) : startingNotes
-  } catch {
-    return startingNotes
+  const [input, setInput] = useState(() => {
+    try {
+      const savedDraft = localStorage.getItem('draft')
+      return savedDraft ? JSON.parse(savedDraft) : { title: '', body: '' }
+    } catch {
+      return { title: '', body: '' }
+    }
+  })
+
+  const [searchItem, setSearchItem] = useState('')
+
+  const titleRef = useRef(null)
+  const bodyRef = useRef(null)
+
+  const deleteNote = useCallback((id) => {
+    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id))
+  }, [])
+
+  const filteredNotes = useMemo(() => {
+    return notes.filter((note) =>
+      note.title.toLowerCase().includes(searchItem.toLowerCase())
+    )
+  }, [notes, searchItem])
+
+  useEffect(() => {
+    async function loadNotes() {
+      const res = await fetch(API_URL + '/notes')
+      const data = await res.json()
+      setNotes(data)
+    }
+
+    loadNotes()
+  }, [])
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      localStorage.setItem('draft', JSON.stringify(input))
+    }, 1000)
+    return () => clearTimeout(id)
+  }, [input])
+
+  function handleInput(e) {
+    const { name, value } = e.target
+    setInput((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
-})
 
-const [input, setInput] = useState(() => {
-  try {
-    const savedDraft = localStorage.getItem("draft")
-    return savedDraft ? JSON.parse(savedDraft) : { title: "", body: "" }
-  } catch {
-    return { title: "", body: "" }
+  function addNewNote(e) {
+    e.preventDefault()
+
+    const trimmedTitle = input.title.trim()
+    const trimmedBody = input.body.trim()
+
+    if (!trimmedTitle || !trimmedBody) {
+      return
+    }
+
+    const newNote = {
+      id: crypto.randomUUID(),
+      title: trimmedTitle,
+      body: trimmedBody,
+    }
+
+    setNotes((prevNotes) => [...prevNotes, newNote])
+    setInput({ title: '', body: '' })
+    localStorage.removeItem('draft')
+    titleRef.current.focus()
   }
-})
 
-const [searchItem, setSearchItem] = useState('')
-
-const titleRef = useRef(null)
-const bodyRef = useRef(null)
-
-const deleteNote = useCallback((id) => {
-  setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id))
-}, [])
-
-const filteredNotes = useMemo(() => {
-  return notes.filter((note) =>
-    note.title.toLowerCase().includes(searchItem.toLowerCase())
-  )
-}, [notes, searchItem])
-
-useEffect(() => {
-  localStorage.setItem('notes', JSON.stringify(notes))
-}, [notes])
-
-useEffect(() => {
-  const id = setTimeout(() => {
-    localStorage.setItem('draft', JSON.stringify(input))
-  }, 1000)
-  return () => clearTimeout(id)
-}, [input])
-
-
-    function handleInput(e) {
-        const {name, value} = e.target 
-        setInput(prev => ({
-            ...prev,
-            [name] : value
-        }))
-    }
-
-    function addNewNote(e) {
-        e.preventDefault()
-
-        const trimmedTitle = input.title.trim()
-        const trimmedBody = input.body.trim()
-
-        if(!trimmedTitle || !trimmedBody) {
-            return
-        }
-
-        const newNote = {
-            id: crypto.randomUUID(),
-            title: trimmedTitle,
-            body: trimmedBody
-        }
-
-        setNotes(prevNotes => [ ...prevNotes, newNote])
-        setInput({title: "", body:""})
-        localStorage.removeItem("draft")
-        titleRef.current.focus()
-    }
-
-    function handleSearch(e) {
-        setSearchItem(e.target.value)
-    }
+  function handleSearch(e) {
+    setSearchItem(e.target.value)
+  }
 
   return (
     <div className="grid min-h-screen grid-cols-[420px_1fr]">
