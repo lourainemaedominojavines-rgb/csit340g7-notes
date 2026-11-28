@@ -91,8 +91,21 @@ function Notes() {
     }
   }
  
-  const handleDelete = useCallback((id) => {
-    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id))
+const handleDelete = useCallback(async (id) => {
+    try {
+      const res = await fetch(API_URL + '/notes/' + id, { method: 'DELETE' })
+      if (!res.ok) {
+        throw new Error('The server answered ' + res.status)
+      }
+
+      setNotes((prevNotes) => {
+        return prevNotes.filter((note) => {
+          return note.id !== id
+        })
+      })
+    } catch (err) {
+      setError(err.message)
+    }
   }, [])
  
   const filteredNotes = useMemo(() => {
